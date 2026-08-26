@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-dark: #050B14;
+    --bg-surface: #08111F;
+    --bg-panel: #0D1726;
+    --accent-cyan: #22D3EE;
+    --accent-blue: #3B82F6;
+    --accent-purple: #8B5CF6;
+    --accent-green: #22C55E;
+    --accent-yellow: #F59E0B;
+    --accent-orange: #F97316;
+    --accent-red: #EF4444;
+  }
+
+  body {
+    background-color: #050B14;
+    color: #F1F5F9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden;
+    user-select: none;
+  }
+}
+
+/* Glassmorphism Panel styles */
+.glass-panel {
+  background: rgba(13, 23, 38, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-elevated {
+  background: rgba(13, 23, 38, 0.90);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.55), 0 0 15px rgba(34, 211, 238, 0.12);
+}
+
+.glass-panel-danger {
+  background: rgba(239, 68, 68, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.35);
+}
+
+.glow-red {
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.45);
+}
+
+.glow-green {
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.35);
+}
+
+.glow-amber {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
+}
+
+/* Custom Tactical Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050B14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 3px;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+  border-color: #22D3EE;
+}
+
+/* Tactical radar grid background */
+.tactical-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+}
+
+.tactical-scanline {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 220, 255, 0.02) 50%,
+    rgba(0, 220, 255, 0.02)
+  );
+  background-size: 100% 4px;
+}
+
+@keyframes pulseSlow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.08); }
+}
+
+@keyframes pingSlow {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  70%, 100% { transform: scale(1.8); opacity: 0; }
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-ping-slow {
+  animation: pingSlow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
