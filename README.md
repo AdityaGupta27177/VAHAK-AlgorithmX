@@ -349,38 +349,7 @@ VAHAK-AlgorithmX/
 └── .env.example
 ```
 
----
 
-## 🎬 Judge Demo — 3 Minutes
-
-```
-00:00 – 00:20  Open 3D Command Center
-               → 50 Villages · 10 Hospitals · 50 Ambulances live on Bihar road network
-
-00:20 – 00:45  Create: CRITICAL CARDIAC EMERGENCY — Jehanabad village
-               → Emergency enters priority queue at CRITICAL slot
-
-00:45 – 01:15  Hospital evaluation shown in real time
-               → Hospital B (10 km): ❌ REJECTED — No Cardiologist on duty
-               → Hospital C (25 km): ✅ SELECTED — All constraints satisfied
-
-01:15 – 01:40  A* Telemetry
-               → Route follows NH-83 road network (no farm shortcuts)
-               → Distance · ETA · Nodes visited · Execution time
-               → Ambulance animates along actual road path in 3D
-
-01:40 – 02:00  Road BLOCKED during active dispatch
-               → A* recalculates in real time on updated graph
-               → New route pushed via Supabase Realtime
-               → 3D path + ETA update live
-
-02:00 – 02:25  Ask AI: "Why was Hospital C selected?"
-               → Structured JSON explanation with confidence score
-
-02:25 – 03:00  EMERGENCY RESOLVED
-               → Response time · SLA compliance · Route recalculations
-               → A* performance · AI confidence
-```
 
 ---
 
