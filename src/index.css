@@ -18,31 +18,34 @@
   }
 }
 
-/* Simplified Clean Dashboard Card styles */
+/* Premium Clean White Dashboard Card styles */
 .glass-panel {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
 }
 
 .glass-panel-elevated {
   background: #FFFFFF;
   border: 1px solid #CBD5E1;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 }
 
 .glass-panel-danger {
   background: #FEF2F2;
   border: 1px solid #FECACA;
-  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.08);
 }
 
 .glow-cyan {
-  box-shadow: 0 0 15px rgba(34, 211, 238, 0.25);
+  box-shadow: 0 0 15px rgba(14, 165, 233, 0.25);
 }
 
 .glow-red {
-  box-shadow: 0 0 18px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.25);
 }
 
 .glow-green {
@@ -65,7 +68,7 @@
 
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -74,20 +77,20 @@
 
 /* Tactical radar grid background */
 .tactical-grid {
-  background-size: 32px 32px;
+  background-size: 28px 28px;
   background-image: 
-    linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
 }
 
 @keyframes pulseSlow {
-  0%, 100% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 0.3; transform: scale(1.08); }
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.05); }
 }
 
 @keyframes pingSlow {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  70%, 100% { transform: scale(1.8); opacity: 0; }
+  0% { transform: scale(0.95); opacity: 0.9; }
+  70%, 100% { transform: scale(1.6); opacity: 0; }
 }
 
 .animate-pulse-slow {
@@ -95,6 +98,24 @@
 }
 
 .animate-ping-slow {
-  animation: pingSlow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation: pingSlow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
+/* Leaflet Stacking Context Isolation */
+.leaflet-container {
+  z-index: 1 !important;
+  isolation: isolate;
+}
+
+.leaflet-pane {
+  z-index: 10 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 20 !important;
+}
+
+.leaflet-control {
+  z-index: 25 !important;
+}

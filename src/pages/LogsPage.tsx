@@ -10,11 +10,13 @@ import {
   Cpu,
   Sparkles,
   Info,
+  Trash2,
+  PlusCircle,
 } from 'lucide-react';
 import { useHealthcareStore } from '../store/useHealthcareStore';
 
 export const LogsPage: React.FC = () => {
-  const { logs } = useHealthcareStore();
+  const { logs, addLog } = useHealthcareStore();
   const [filterLevel, setFilterLevel] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -34,15 +36,15 @@ export const LogsPage: React.FC = () => {
   const getLevelBadge = (level: string) => {
     switch (level) {
       case 'CRITICAL':
-        return 'bg-red-950 text-red-300 border-red-500/50';
+        return 'bg-red-50 text-red-700 border-red-200';
       case 'WARN':
-        return 'bg-yellow-950 text-yellow-300 border-yellow-500/50';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'A_STAR':
-        return 'bg-cyan-950 text-cyan-300 border-cyan-500/50';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'AI_TRIAGE':
-        return 'bg-purple-950 text-purple-300 border-purple-500/50';
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
-        return 'bg-slate-900 text-slate-400 border-slate-700';
+        return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
 
@@ -56,30 +58,52 @@ export const LogsPage: React.FC = () => {
     downloadAnchor.remove();
   };
 
+  const handleClearLogs = () => {
+    useHealthcareStore.setState({ logs: [] });
+  };
+
+  const handleGenerateTestLog = () => {
+    addLog('INFO', 'MANUAL_TEST', `Manual operator audit ping generated at ${new Date().toLocaleTimeString()}`);
+  };
+
   return (
-    <div className="flex-1 p-6 overflow-y-auto bg-[#050B14] space-y-6 select-none">
+    <div className="flex-1 p-6 overflow-y-auto bg-slate-50 space-y-6 select-none">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-white tracking-tight font-mono uppercase">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight font-mono uppercase">
               System Audit Trail & Telemetry Logs
             </h1>
-            <span className="px-2.5 py-0.5 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold">
+            <span className="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-xs font-mono font-bold">
               {logs.length} EVENTS RECORDED
             </span>
           </div>
-          <p className="text-xs text-slate-400 font-sans mt-1">
+          <p className="text-xs text-slate-500 font-sans mt-1">
             Immutable telemetry stream tracking A* execution cycles, Gemini clinical triage decisions, and SOS transmissions.
           </p>
         </div>
 
-        <button
-          onClick={handleExportLogs}
-          className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 font-mono text-xs font-bold flex items-center gap-2 transition-colors"
-        >
-          <Download className="w-4 h-4" /> Export JSON Audit
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleGenerateTestLog}
+            className="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-mono text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+          >
+            <PlusCircle className="w-4 h-4 text-blue-600" /> Ping Log
+          </button>
+          <button
+            onClick={handleClearLogs}
+            className="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-mono text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+          >
+            <Trash2 className="w-4 h-4 text-red-600" /> Clear
+          </button>
+          <button
+            onClick={handleExportLogs}
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+          >
+            <Download className="w-4 h-4" /> Export JSON
+          </button>
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -92,20 +116,20 @@ export const LogsPage: React.FC = () => {
             placeholder="Search telemetry messages, algorithm logs, components..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 font-mono shadow-sm"
           />
         </div>
 
         {/* Level Pills */}
-        <div className="flex items-center gap-1.5 font-mono text-xs w-full sm:w-auto">
+        <div className="flex items-center gap-1.5 font-mono text-xs w-full sm:w-auto flex-wrap">
           {['ALL', 'CRITICAL', 'A_STAR', 'AI_TRIAGE', 'WARN', 'INFO'].map((lvl) => (
             <button
               key={lvl}
               onClick={() => setFilterLevel(lvl)}
-              className={`px-3 py-1.5 rounded-lg border transition-all text-[10px] ${
+              className={`px-3 py-1.5 rounded-lg border transition-all text-[10px] cursor-pointer ${
                 filterLevel === lvl
-                  ? 'bg-cyan-950 border-cyan-400 text-cyan-200 font-bold'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                  ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-sm'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
               }`}
             >
               {lvl}
@@ -114,40 +138,40 @@ export const LogsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Terminal Log Console View */}
-      <div className="rounded-2xl bg-[#03070E] border border-slate-800 p-4 font-mono text-xs space-y-2 shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 text-[10px] text-slate-500">
+      {/* Log Console View */}
+      <div className="rounded-2xl bg-white border border-slate-200 p-4 font-mono text-xs space-y-2 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-[10px] text-slate-500 font-bold">
           <span>TIMESTAMP | SEVERITY | COMPONENT | TELEMETRY RECORD</span>
-          <span>OUTPUT: STREAMING (WS 12ms)</span>
+          <span>OUTPUT: STREAMING ACTIVE</span>
         </div>
 
-        <div className="space-y-1 max-h-[520px] overflow-y-auto pr-2">
+        <div className="space-y-1.5 max-h-[520px] overflow-y-auto pr-2">
           {filteredLogs.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">No logs found matching filter.</div>
+            <div className="text-center py-12 text-slate-400">No logs found matching filter.</div>
           ) : (
             filteredLogs.map((log) => (
               <div
                 key={log.id}
-                className="p-2.5 rounded-lg bg-slate-900/60 hover:bg-slate-900 border border-slate-800/60 flex items-start gap-3 transition-colors"
+                className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-start gap-3 transition-colors text-slate-800"
               >
-                <span className="text-slate-500 text-[10px] shrink-0 pt-0.5">{log.timestamp}</span>
+                <span className="text-slate-400 text-[10px] shrink-0 pt-0.5">{log.timestamp}</span>
 
                 <span
-                  className={`px-2 py-0.2 rounded text-[9px] font-bold border shrink-0 ${getLevelBadge(
+                  className={`px-2 py-0.5 rounded text-[9px] font-bold border shrink-0 ${getLevelBadge(
                     log.level
                   )}`}
                 >
                   {log.level}
                 </span>
 
-                <span className="text-cyan-400 font-bold text-[10px] shrink-0">[{log.component}]</span>
+                <span className="text-blue-700 font-bold text-[10px] shrink-0">[{log.component}]</span>
 
-                <span className="text-slate-200 leading-relaxed font-sans text-xs flex-1">
+                <span className="text-slate-800 leading-relaxed font-sans text-xs flex-1">
                   {log.message}
                 </span>
 
                 {log.meta && (
-                  <span className="text-[10px] text-slate-500 font-mono hidden md:inline shrink-0">
+                  <span className="text-[10px] text-slate-400 font-mono hidden md:inline shrink-0">
                     {JSON.stringify(log.meta)}
                   </span>
                 )}

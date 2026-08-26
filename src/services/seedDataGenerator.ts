@@ -229,40 +229,60 @@ export function generateSeedData() {
   }
 
   // ----------------------------------------------------
-  // 3. AMBULANCES (50 Tactical Ground & Drone Medivacs)
+  // 3. AMBULANCES (50 Tactical Ground Ambulances - 100% Real Road Fleet)
   // ----------------------------------------------------
   const ambulances: Ambulance[] = [];
   const ambulanceTypes: AmbulanceType[] = [
     'Advanced Life Support (ALS)',
     '4x4 All-Terrain Critical Care',
-    'Emergency Drone Medivac',
     'Basic Life Support (BLS)',
   ];
 
   for (let i = 0; i < 50; i++) {
-    const isDrone = i % 4 === 2;
-    const type = isDrone
-      ? 'Emergency Drone Medivac'
-      : ambulanceTypes[i % ambulanceTypes.length];
-
+    const type = ambulanceTypes[i % ambulanceTypes.length];
     const homeHosp = hospitals[i % hospitals.length];
-    const statusIdx = i % 5;
+    const targetVillage = villages[(i * 3) % villages.length];
+    const statusIdx = i % 4;
     const status = statusIdx === 0 ? 'Idle / Ready'
       : statusIdx === 1 ? 'Dispatched En Route'
       : statusIdx === 2 ? 'At Scene / Patient Loading'
-      : statusIdx === 3 ? 'Transporting to Hospital'
-      : 'Idle / Ready';
+      : 'Transporting to Hospital';
 
-    // Position ambulance near hospital or village
+    // Position ambulance on street road near hospital or village
     const offsetAngle = rng.range(0, Math.PI * 2);
-    const offsetDist = status === 'Idle / Ready' ? rng.range(0.5, 2.5) : rng.range(5, 22);
+    const offsetDist = status === 'Idle / Ready' ? rng.range(0.5, 2.0) : rng.range(4, 18);
     const ambX = Math.round((homeHosp.position[0] + Math.cos(offsetAngle) * offsetDist) * 10) / 10;
     const ambZ = Math.round((homeHosp.position[2] + Math.sin(offsetAngle) * offsetDist) * 10) / 10;
-    const ambY = isDrone ? 3.5 : 0.4;
+    const ambY = 0.22; // Strict street level height
+
+    // Multi-point street traversal along road network
+    const hPos = homeHosp.position;
+    const vPos = targetVillage.position;
+    const midX1 = hPos[0] + (vPos[0] - hPos[0]) * 0.33 + rng.range(-1.2, 1.2);
+    const midZ1 = hPos[2] + (vPos[2] - hPos[2]) * 0.33 + rng.range(-1.2, 1.2);
+    const midX2 = hPos[0] + (vPos[0] - hPos[0]) * 0.66 + rng.range(-1.2, 1.2);
+    const midZ2 = hPos[2] + (vPos[2] - hPos[2]) * 0.66 + rng.range(-1.2, 1.2);
+
+    const waypoints: [number, number, number][] = [
+      [hPos[0], 0.22, hPos[2]],
+      [midX1, 0.22, midZ1],
+      [midX2, 0.22, midZ2],
+      [vPos[0], 0.22, vPos[2]],
+      [midX2, 0.22, midZ2],
+      [midX1, 0.22, midZ1],
+      [hPos[0], 0.22, hPos[2]],
+    ];
+
+    const callsignNumber = String(i + 1).padStart(2, '0');
+    const callsign = type === 'Advanced Life Support (ALS)'
+      ? `ALS-UNIT-${callsignNumber}`
+      : type === '4x4 All-Terrain Critical Care'
+      ? `4X4-RESCUE-${callsignNumber}`
+      : `BLS-UNIT-${callsignNumber}`;
 
     ambulances.push({
-      id: `amb-${String(i + 1).padStart(2, '0')}`,
-      callsign: isDrone ? `MEDIVAC-DRONE-${String(i + 1).padStart(2, '0')}` : `MEDIVAC-ALS-${String(i + 1).padStart(2, '0')}`,
+      id: `amb-${callsignNumber}`,
+      callsign,
       vehicle_number: `IND-MED-2026-${String(4000 + i)}`,
       type,
       status,
@@ -270,21 +290,27 @@ export function generateSeedData() {
       longitude: 85.3 + ambX * 0.05,
       position: [ambX, ambY, ambZ],
       homeBaseId: homeHosp.id,
-      driver_name: isDrone ? 'Autonomous Flight Controller #AI-9' : `Paramedic Captain ${['Arun Verma', 'Dinesh Kumar', 'Vikram Singh', 'Rohan Mehta', 'Sneha Rao', 'Manoj Patil'][i % 6]}`,
-      driverName: isDrone ? 'Autonomous Flight Controller #AI-9' : `Captain ${['Arun Verma', 'Dinesh Kumar', 'Vikram Singh', 'Rohan Mehta', 'Sneha Rao', 'Manoj Patil'][i % 6]}`,
-      paramedicLead: isDrone ? 'Remote AI Clinical Monitor' : `Lead EMT ${['Sarah Jenkins', 'Preeti Nair', 'David Miller', 'Ananya Gupta', 'Karan Johar', 'Neha Sharma'][i % 6]} (ALS Certified)`,
-      fuel_percentage: rng.int(65, 100),
-      fuelPercent: rng.int(65, 100),
-      oxygenLevelPercent: rng.int(80, 100),
-      speedKmh: status === 'Idle / Ready' ? 0 : isDrone ? rng.int(90, 135) : rng.int(45, 80),
-      batteryOrFuelType: isDrone ? 'Electric eVTOL' : i % 2 === 0 ? 'Hybrid 4x4' : 'Diesel Heavy',
-      equipment: isDrone
-        ? ['Antivenom Cryo-Pod', 'Automated External Defibrillator', 'Whole Blood Transport Box', 'Emergency Satcom Mesh']
-        : ['ALS Defibrillator', 'Cold-Chain Kit', 'Spinal Immobilization', 'Portable Ventilator', 'Infusion Pumps'],
+      driver_name: `Paramedic Captain ${['Arun Verma', 'Dinesh Kumar', 'Vikram Singh', 'Rohan Mehta', 'Sneha Rao', 'Manoj Patil'][i % 6]}`,
+      driverName: `Captain ${['Arun Verma', 'Dinesh Kumar', 'Vikram Singh', 'Rohan Mehta', 'Sneha Rao', 'Manoj Patil'][i % 6]}`,
+      paramedicLead: `Lead EMT ${['Sarah Jenkins', 'Preeti Nair', 'David Miller', 'Ananya Gupta', 'Karan Johar', 'Neha Sharma'][i % 6]} (ALS Certified)`,
+      fuel_percentage: rng.int(70, 100),
+      fuelPercent: rng.int(70, 100),
+      oxygenLevelPercent: rng.int(85, 100),
+      speedKmh: status === 'Idle / Ready' ? 0 : rng.int(55, 78),
+      estimatedArrivalMinutes: rng.int(8, 24),
+      routeWaypoints: waypoints,
+      batteryOrFuelType: i % 2 === 0 ? 'Hybrid 4x4' : 'Diesel Heavy',
+      equipment: [
+        'ALS Defibrillator & Multi-Lead ECG',
+        'Cold-Chain Antivenom Kit',
+        'Spinal Immobilization Board',
+        'Portable Resuscitation Ventilator',
+        'Intravenous Infusion Pumps',
+      ],
       telemetry: {
         tirePressureOk: true,
         defibrillatorReady: true,
-        telemedicineUplink: isDrone ? 'Connected (5G Satellite)' : 'Connected (Mesh)',
+        telemedicineUplink: 'Connected (Mesh)',
         lastServiceDate: '2026-08-15',
       },
     });

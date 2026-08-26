@@ -1,74 +1,78 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
+import { createGoogleSatelliteTexture, INDIAN_VILLAGE_COORDINATES } from '../../services/SatelliteTileService';
 
 interface TerrainEnvironmentProps {
   dayNightMode: 'NIGHT_TACTICAL' | 'DAY_SATELLITE' | 'DUSK_SURVEILLANCE';
   showAtmosphericFog: boolean;
   showTerrainRelief: boolean;
+  activeVillageKey?: keyof typeof INDIAN_VILLAGE_COORDINATES;
 }
 
 export const TerrainEnvironment: React.FC<TerrainEnvironmentProps> = ({
   dayNightMode,
   showAtmosphericFog,
   showTerrainRelief,
+  activeVillageKey = 'dharnai',
 }) => {
-  // Generate terrain geometry with height variance (hills, river valleys, mountain ridges)
+  const [satelliteTexture, setSatelliteTexture] = useState<THREE.CanvasTexture | null>(null);
+
+  useEffect(() => {
+    const tex = createGoogleSatelliteTexture(activeVillageKey, (updatedTex) => {
+      setSatelliteTexture(updatedTex);
+    });
+    setSatelliteTexture(tex);
+  }, [activeVillageKey]);
+
+  // Generate terrain geometry with realistic hills, valleys, and mountain relief
   const terrainGeo = useMemo(() => {
-    const geo = new THREE.PlaneGeometry(80, 80, 64, 64);
+    const geo = new THREE.PlaneGeometry(90, 90, 64, 64);
     const pos = geo.attributes.position;
-    
+
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const y = pos.getY(i);
-      
-      // Calculate realistic elevation
-      const mountainNoise = Math.sin(x * 0.08) * Math.cos(y * 0.08) * 1.8;
-      const ridgeNoise = Math.sin((x + y) * 0.12) * 1.2;
-      const riverBed = Math.exp(-Math.pow((x - y * 0.5) * 0.1, 2)) * -1.5;
-      
+
+      // Realistic elevation contours
+      const mountainNoise = Math.sin(x * 0.08) * Math.cos(y * 0.08) * 1.6;
+      const ridgeNoise = Math.sin((x + y) * 0.12) * 0.9;
+      const riverBed = Math.exp(-Math.pow((x - y * 0.4) * 0.09, 2)) * -1.4;
+
       let elevation = mountainNoise + ridgeNoise + riverBed;
       if (elevation < -0.8) elevation = -0.8;
-      
-      pos.setZ(i, elevation); // Plane is oriented along Z before rotation
+
+      pos.setZ(i, elevation); // Z before rotation
     }
-    
+
     geo.computeVertexNormals();
     return geo;
   }, []);
 
   const gridColor =
     dayNightMode === 'NIGHT_TACTICAL'
-      ? '#0E7490'
+      ? '#0284C7'
       : dayNightMode === 'DUSK_SURVEILLANCE'
       ? '#7C3AED'
-      : '#0284C7';
+      : '#38BDF8';
 
-  const terrainColor =
+  const fogColor =
     dayNightMode === 'NIGHT_TACTICAL'
-      ? '#08111F'
+      ? '#0F172A'
       : dayNightMode === 'DUSK_SURVEILLANCE'
-      ? '#111827'
-      : '#0F172A';
+      ? '#1E1B4B'
+      : '#E0F2FE';
 
   return (
     <group>
-      {/* Fog */}
+      {/* Atmospheric Fog */}
       {showAtmosphericFog && (
         <fog
           attach="fog"
-          args={[
-            dayNightMode === 'NIGHT_TACTICAL'
-              ? '#050B14'
-              : dayNightMode === 'DUSK_SURVEILLANCE'
-              ? '#0A0E17'
-              : '#0C192E',
-            25,
-            90,
-          ]}
+          args={[fogColor, 45, 130]}
         />
       )}
 
-      {/* Main Ground Mesh with elevation */}
+      {/* Main Ground Mesh with Google Maps Satellite Textured Surface */}
       <mesh
         geometry={terrainGeo}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -76,36 +80,40 @@ export const TerrainEnvironment: React.FC<TerrainEnvironmentProps> = ({
         receiveShadow
       >
         <meshStandardMaterial
-          color={terrainColor}
-          roughness={0.85}
-          metalness={0.2}
+          map={satelliteTexture || undefined}
+          roughness={0.65}
+          metalness={0.15}
           wireframe={!showTerrainRelief}
         />
       </mesh>
 
       {/* Tactical Coordinate Grid Overlay */}
       <gridHelper
-        args={[80, 40, gridColor, '#1E293B']}
-        position={[0, 0.02, 0]}
+        args={[90, 45, gridColor, '#334155']}
+        position={[0, 0.03, 0]}
       />
 
-      {/* Ambient Lighting */}
-      <ambientLight intensity={dayNightMode === 'NIGHT_TACTICAL' ? 0.35 : 0.65} />
-      
-      {/* Directional Sunlight / Satellite Scanner Light */}
+      {/* Lighting Rig */}
+      <ambientLight intensity={dayNightMode === 'DAY_SATELLITE' ? 1.3 : 0.85} />
+
+      {/* Directional Sunlight / Satellite Scanner */}
       <directionalLight
-        position={[25, 45, 20]}
-        intensity={dayNightMode === 'NIGHT_TACTICAL' ? 0.8 : 1.4}
-        color={dayNightMode === 'NIGHT_TACTICAL' ? '#38BDF8' : '#F8FAFC'}
+        position={[30, 55, 25]}
+        intensity={1.5}
+        color="#FFFFFF"
         castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
       />
-      
-      {/* Tactical Blue Rim Light from Opposite Corner */}
+
+      {/* Tactical Rim Light */}
       <directionalLight
-        position={[-30, 20, -30]}
-        intensity={0.5}
-        color="#818CF8"
+        position={[-35, 25, -35]}
+        intensity={0.6}
+        color="#38BDF8"
       />
     </group>
   );
 };
+
+
