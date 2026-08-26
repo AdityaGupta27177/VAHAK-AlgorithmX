@@ -28,6 +28,9 @@ import { soundEffects } from '../../services/soundEffects';
 // Real Indian Rural Region: Dharnai / Makhdumpur / Jehanabad / Gaya District, Bihar (NH-83 Highway Corridor)
 const DHARNAI_PILOT_COORDS: [number, number] = [24.981, 85.002];
 
+import { REAL_ROAD_COORDINATES } from '../../services/realRoadData';
+import { fetchRealRoadRoute, calculateBearing } from '../../services/realRoadRouter';
+
 // High-Fidelity Segregated Emergency Cases for Indian Rural Villages
 export interface RegionalEmergencyCase {
   id: string;
@@ -49,6 +52,7 @@ export interface RegionalEmergencyCase {
   status: 'PENDING' | 'EN_ROUTE_TO_PATIENT' | 'AT_SCENE' | 'TRANSPORTING_TO_HOSPITAL' | 'RESOLVED';
   liveSpeedKmh: number;
   liveEtaMin: number;
+  roadCorridorName: string;
 }
 
 const INITIAL_EMERGENCY_CASES: RegionalEmergencyCase[] = [
@@ -62,20 +66,19 @@ const INITIAL_EMERGENCY_CASES: RegionalEmergencyCase[] = [
     symptoms: 'Neurotoxicity, systemic coagulopathy, severe hemotoxic swelling',
     vitals: 'BP 80/50 | HR 132 bpm | SpO2 88%',
     villageName: 'Dharnai Village (Sector Alpha)',
-    villageCoords: [24.998, 85.028],
+    villageCoords: [24.996748, 85.026805],
     assignedHospitalName: 'Jehanabad Apex Trauma & Antivenom Center',
-    hospitalCoords: [24.975, 84.998],
+    hospitalCoords: [24.974771, 84.999857],
     assignedAmbulance: 'ALS-UNIT-01',
     ambulanceType: 'ALS',
-    distanceKm: 5.8,
+    distanceKm: 5.57,
     status: 'PENDING',
     liveSpeedKmh: 0,
     liveEtaMin: 8,
-    streetWaypoints: [
-      [24.975, 84.998],
-      [24.981, 85.002],
-      [24.988, 85.015],
-      [24.998, 85.028],
+    roadCorridorName: 'NH-83 Highway & Dharnai Solar Village Link Road',
+    streetWaypoints: REAL_ROAD_COORDINATES['case-01'] || [
+      [24.974771, 84.999857],
+      [24.996748, 85.026805],
     ],
   },
   {
@@ -93,15 +96,13 @@ const INITIAL_EMERGENCY_CASES: RegionalEmergencyCase[] = [
     hospitalCoords: [24.960, 84.992],
     assignedAmbulance: '4X4-RESCUE-02',
     ambulanceType: '4X4',
-    distanceKm: 7.6,
+    distanceKm: 11.07,
     status: 'PENDING',
     liveSpeedKmh: 0,
-    liveEtaMin: 11,
-    streetWaypoints: [
+    liveEtaMin: 14,
+    roadCorridorName: 'NH-83 Northbound & Kandu Dih Paved Embankment Road',
+    streetWaypoints: REAL_ROAD_COORDINATES['case-02'] || [
       [24.960, 84.992],
-      [24.975, 84.998],
-      [24.988, 85.015],
-      [24.998, 85.028],
       [25.008, 85.042],
     ],
   },
@@ -117,16 +118,16 @@ const INITIAL_EMERGENCY_CASES: RegionalEmergencyCase[] = [
     villageName: 'Belaganj Foothill Settlement',
     villageCoords: [24.968, 85.010],
     assignedHospitalName: 'Jehanabad Apex Trauma & Cardiology Center',
-    hospitalCoords: [24.975, 84.998],
+    hospitalCoords: [24.974771, 84.999857],
     assignedAmbulance: 'ALS-UNIT-03',
     ambulanceType: 'ALS',
-    distanceKm: 4.4,
+    distanceKm: 1.42,
     status: 'PENDING',
     liveSpeedKmh: 0,
-    liveEtaMin: 6,
-    streetWaypoints: [
-      [24.975, 84.998],
-      [24.965, 85.004],
+    liveEtaMin: 4,
+    roadCorridorName: 'Belaganj South Bypass & Station Feeder Road',
+    streetWaypoints: REAL_ROAD_COORDINATES['case-03'] || [
+      [24.974771, 84.999857],
       [24.968, 85.010],
     ],
   },
@@ -142,16 +143,16 @@ const INITIAL_EMERGENCY_CASES: RegionalEmergencyCase[] = [
     villageName: 'Phalgu Valley Agro Cluster',
     villageCoords: [24.980, 85.022],
     assignedHospitalName: 'Jehanabad District Civil Hospital',
-    hospitalCoords: [24.975, 84.998],
+    hospitalCoords: [24.974771, 84.999857],
     assignedAmbulance: 'BLS-UNIT-04',
     ambulanceType: 'BLS',
-    distanceKm: 5.1,
+    distanceKm: 3.13,
     status: 'PENDING',
     liveSpeedKmh: 0,
-    liveEtaMin: 9,
-    streetWaypoints: [
-      [24.975, 84.998],
-      [24.981, 85.002],
+    liveEtaMin: 6,
+    roadCorridorName: 'SH-71 Eastbound & Phalgu Valley Paved Road',
+    streetWaypoints: REAL_ROAD_COORDINATES['case-04'] || [
+      [24.974771, 84.999857],
       [24.980, 85.022],
     ],
   },
@@ -170,14 +171,13 @@ const INITIAL_EMERGENCY_CASES: RegionalEmergencyCase[] = [
     hospitalCoords: [24.960, 84.992],
     assignedAmbulance: 'ALS-UNIT-05',
     ambulanceType: 'ALS',
-    distanceKm: 6.8,
+    distanceKm: 8.37,
     status: 'PENDING',
     liveSpeedKmh: 0,
-    liveEtaMin: 10,
-    streetWaypoints: [
+    liveEtaMin: 12,
+    roadCorridorName: 'NH-83 & North Canal Paved Corridor',
+    streetWaypoints: REAL_ROAD_COORDINATES['case-05'] || [
       [24.960, 84.992],
-      [24.975, 84.998],
-      [24.995, 85.012],
       [25.002, 85.020],
     ],
   },
@@ -196,13 +196,13 @@ const INITIAL_EMERGENCY_CASES: RegionalEmergencyCase[] = [
     hospitalCoords: [24.960, 84.992],
     assignedAmbulance: 'BLS-UNIT-06',
     ambulanceType: 'BLS',
-    distanceKm: 3.9,
+    distanceKm: 6.90,
     status: 'PENDING',
     liveSpeedKmh: 0,
-    liveEtaMin: 7,
-    streetWaypoints: [
+    liveEtaMin: 10,
+    roadCorridorName: 'Tehta-Chhath Ghat Rural Paved Road',
+    streetWaypoints: REAL_ROAD_COORDINATES['case-06'] || [
       [24.960, 84.992],
-      [24.975, 84.998],
       [24.988, 85.015],
     ],
   },
@@ -291,17 +291,18 @@ export const GoogleMapsInteractiveView: React.FC = () => {
         .addTo(map)
         .bindPopup(`<strong>${c.triagePriority}: ${c.condition}</strong><br/>Patient: ${c.patientName}<br/>Vitals: ${c.vitals}<br/>Village: ${c.villageName}`);
 
-      // Add Ambulance Marker for each case
+      // Add Ambulance Marker for each case with bearing rotation capability
       const ambIcon = L.divIcon({
         html: `<div class="px-2.5 py-1 rounded-xl bg-slate-950 border-2 ${
           isCritical ? 'border-rose-500' : 'border-blue-400'
         } shadow-2xl flex items-center gap-1.5 text-white font-mono font-bold text-[10px] whitespace-nowrap">
-          <span class="w-2 h-2 rounded-full ${isCritical ? 'bg-rose-500 animate-ping' : 'bg-blue-400'}"></span>
-          <span>🚑 ${c.assignedAmbulance}</span>
+          <span class="amb-icon-wrap inline-block transition-transform duration-75">🚑</span>
+          <span class="w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-rose-500 animate-ping' : 'bg-blue-400'}"></span>
+          <span>${c.assignedAmbulance}</span>
         </div>`,
         className: `amb-marker-${c.id}`,
-        iconSize: [110, 26],
-        iconAnchor: [55, 13],
+        iconSize: [120, 26],
+        iconAnchor: [60, 13],
       });
 
       const ambMarker = L.marker(c.hospitalCoords, { icon: ambIcon }).addTo(map);
@@ -322,20 +323,22 @@ export const GoogleMapsInteractiveView: React.FC = () => {
 
     soundEffects.playDispatchConfirmed();
 
-    // 1. Draw Active Street Route
+    // 1. Draw Active Street Route with Dual-Layer Asphalt & Neon Glow
     if (routePolylinesRef.current[caseId]) {
       routePolylinesRef.current[caseId].remove();
     }
 
+    const isCritical = c.triagePriority === 'P1_CRITICAL';
     const poly = L.polyline(c.streetWaypoints, {
-      color: c.triagePriority === 'P1_CRITICAL' ? '#EF4444' : '#38BDF8',
+      color: isCritical ? '#EF4444' : '#06B6D4',
       weight: 5,
       opacity: 0.95,
-      dashArray: '8, 8',
+      lineCap: 'round',
+      lineJoin: 'round',
     }).addTo(map);
 
     routePolylinesRef.current[caseId] = poly;
-    map.fitBounds(poly.getBounds(), { padding: [50, 50] });
+    map.fitBounds(poly.getBounds(), { padding: [60, 60], maxZoom: 16 });
 
     // Set Status to EN ROUTE TO PATIENT
     setCases((prev) =>
@@ -344,7 +347,7 @@ export const GoogleMapsInteractiveView: React.FC = () => {
           ? {
               ...item,
               status: 'EN_ROUTE_TO_PATIENT',
-              liveSpeedKmh: c.triagePriority === 'P1_CRITICAL' ? 74 : 60,
+              liveSpeedKmh: isCritical ? 78 : 62,
             }
           : item
       )
@@ -353,9 +356,9 @@ export const GoogleMapsInteractiveView: React.FC = () => {
     const waypoints = c.streetWaypoints;
     const ambMarker = ambulanceMarkersRef.current[caseId];
 
-    // Animate Phase 1: To Patient
+    // High-Resolution Smooth Micro-Step Animation
     let step = 0;
-    const totalSteps = 50;
+    const totalSteps = Math.max(140, waypoints.length);
     const interval1 = setInterval(() => {
       step++;
       const frac = step / totalSteps;
@@ -369,12 +372,31 @@ export const GoogleMapsInteractiveView: React.FC = () => {
       const curLat = p1[0] + (p2[0] - p1[0]) * segFrac;
       const curLon = p1[1] + (p2[1] - p1[1]) * segFrac;
 
-      if (ambMarker) ambMarker.setLatLng([curLat, curLon]);
+      // Calculate bearing angle to orient the ambulance along the road curve
+      const bearing = calculateBearing(p1[0], p1[1], p2[0], p2[1]);
+
+      if (ambMarker) {
+        ambMarker.setLatLng([curLat, curLon]);
+        const el = ambMarker.getElement();
+        if (el) {
+          const innerIcon = el.querySelector('.amb-icon-wrap') as HTMLElement;
+          if (innerIcon) {
+            innerIcon.style.transform = `rotate(${bearing}deg)`;
+          }
+        }
+      }
+
+      // Physics: Speed up on straight stretches, slow slightly for tight road turns
+      const bearingDiff = Math.abs(bearing - 180);
+      const turnPenalty = bearingDiff > 60 ? 12 : 0;
+      const liveSpeed = Math.max(35, (isCritical ? 80 : 65) - turnPenalty);
 
       const remEta = Math.max(0, Math.round(c.liveEtaMin * (1 - frac)));
       setCases((prev) =>
         prev.map((item) =>
-          item.id === caseId ? { ...item, liveEtaMin: remEta } : item
+          item.id === caseId
+            ? { ...item, liveEtaMin: remEta, liveSpeedKmh: liveSpeed }
+            : item
         )
       );
 
@@ -382,39 +404,44 @@ export const GoogleMapsInteractiveView: React.FC = () => {
         clearInterval(interval1);
         soundEffects.playEmergencyAlert();
 
-        // Phase 2: At Scene / Stabilize Patient
+        // Phase 2: At Scene / Patient Onboard & Stabilization
         setCases((prev) =>
           prev.map((item) =>
             item.id === caseId
-              ? { ...item, status: 'AT_SCENE', liveSpeedKmh: 0 }
+              ? { ...item, status: 'AT_SCENE', liveSpeedKmh: 0, liveEtaMin: 0 }
               : item
           )
         );
 
         setTimeout(() => {
           soundEffects.playRecalculateSweep();
-          // Phase 3: Transporting to Hospital
+          // Phase 3: Transporting Patient to Hospital along Return Road Corridor
           setCases((prev) =>
             prev.map((item) =>
               item.id === caseId
                 ? {
                     ...item,
                     status: 'TRANSPORTING_TO_HOSPITAL',
-                    liveSpeedKmh: c.triagePriority === 'P1_CRITICAL' ? 82 : 65,
+                    liveSpeedKmh: isCritical ? 85 : 70,
+                    liveEtaMin: Math.max(2, Math.round(c.liveEtaMin * 0.9)),
                   }
                 : item
             )
           );
 
           if (routePolylinesRef.current[caseId]) {
-            routePolylinesRef.current[caseId].setStyle({ color: '#22C55E', dashArray: undefined });
+            routePolylinesRef.current[caseId].setStyle({
+              color: '#22C55E',
+              weight: 6,
+            });
           }
 
           const returnWaypoints = [...waypoints].reverse();
           let step2 = 0;
+          const totalSteps2 = Math.max(140, returnWaypoints.length);
           const interval2 = setInterval(() => {
             step2++;
-            const frac2 = step2 / totalSteps;
+            const frac2 = step2 / totalSteps2;
             const exactIdx2 = frac2 * (returnWaypoints.length - 1);
             const segIdx2 = Math.min(Math.floor(exactIdx2), returnWaypoints.length - 2);
             const segFrac2 = exactIdx2 - segIdx2;
@@ -424,13 +451,32 @@ export const GoogleMapsInteractiveView: React.FC = () => {
 
             const curLat2 = rp1[0] + (rp2[0] - rp1[0]) * segFrac2;
             const curLon2 = rp1[1] + (rp2[1] - rp1[1]) * segFrac2;
+            const bearing2 = calculateBearing(rp1[0], rp1[1], rp2[0], rp2[1]);
 
-            if (ambMarker) ambMarker.setLatLng([curLat2, curLon2]);
+            if (ambMarker) {
+              ambMarker.setLatLng([curLat2, curLon2]);
+              const el = ambMarker.getElement();
+              if (el) {
+                const innerIcon = el.querySelector('.amb-icon-wrap') as HTMLElement;
+                if (innerIcon) {
+                  innerIcon.style.transform = `rotate(${bearing2}deg)`;
+                }
+              }
+            }
 
-            if (step2 >= totalSteps) {
+            const remEta2 = Math.max(0, Math.round(c.liveEtaMin * 0.9 * (1 - frac2)));
+            setCases((prev) =>
+              prev.map((item) =>
+                item.id === caseId
+                  ? { ...item, liveEtaMin: remEta2, liveSpeedKmh: isCritical ? 84 : 68 }
+                  : item
+              )
+            );
+
+            if (step2 >= totalSteps2) {
               clearInterval(interval2);
               soundEffects.playSuccess();
-              // Phase 4: Resolved / Admitted
+              // Phase 4: Hospital Arrival / Admitted & Saved
               setCases((prev) =>
                 prev.map((item) =>
                   item.id === caseId
@@ -444,10 +490,10 @@ export const GoogleMapsInteractiveView: React.FC = () => {
                 )
               );
             }
-          }, 45);
-        }, 2500);
+          }, 35);
+        }, 2200);
       }
-    }, 45);
+    }, 35);
   };
 
   // Dispatch All Active Critical Emergencies Simultaneously
