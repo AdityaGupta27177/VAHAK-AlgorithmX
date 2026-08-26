@@ -81,20 +81,20 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#050B14] text-slate-100 overflow-hidden font-sans select-none">
+    <div className="h-screen w-screen flex flex-col bg-[#F8FAFC] text-slate-900 overflow-hidden font-sans select-none">
       {/* Top Telemetry & Control Bar */}
       <TopBar />
 
       {/* Connection Notice Banner if Supabase is offline/fallback */}
       {backendStatus === 'FALLBACK_LOCAL' && currentRoute !== 'settings' && (
-        <div className="bg-amber-950/60 border-b border-amber-500/30 px-4 py-1 flex items-center justify-between text-xs font-mono text-amber-300">
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-1 flex items-center justify-between text-xs font-mono text-amber-800">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
             <span>BACKEND CONNECTION INTERRUPTED — Operating with full 50-Village, 10-Hospital, 50-Ambulance local engine.</span>
           </div>
           <button
             onClick={() => navigate('settings')}
-            className="flex items-center gap-1 text-[11px] text-cyan-300 hover:text-cyan-200 underline cursor-pointer"
+            className="flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-700 underline cursor-pointer"
           >
             <Database className="w-3 h-3" /> Connect Supabase / Seed Tables <ArrowRight className="w-3 h-3" />
           </button>
@@ -104,7 +104,7 @@ export default function App() {
       {/* Center Layout: Sidebar + Active Screen View */}
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar />
-        <main className="flex-1 flex overflow-hidden relative bg-[#050B14]">
+        <main className="flex-1 flex overflow-hidden relative bg-[#F8FAFC]">
           {renderCurrentView()}
         </main>
       </div>

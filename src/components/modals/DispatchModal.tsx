@@ -44,9 +44,7 @@ export const DispatchModal: React.FC = () => {
     dispatchAmbulanceToEmergency,
   } = useHealthcareStore();
 
-  if (!dispatchModalEmergency) return null;
-
-  const emergency = dispatchModalEmergency;
+  const emergency = dispatchModalEmergency || ({} as any);
 
   // Selected ambulance & target hospital state (for manual mode or pre-selection)
   const [selectedAmbulanceId, setSelectedAmbulanceId] = useState<string>('');
@@ -147,6 +145,8 @@ export const DispatchModal: React.FC = () => {
       setCalculatedRoute(routeRes);
     }
   }, [selectedAmbulanceId, emergency.position, roadSegments, selectedRoutingAlgorithm]);
+
+  if (!dispatchModalEmergency) return null;
 
   // Handle Algorithmic Pipeline Execution
   const handleExecutePipeline = async () => {

@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { TerrainEnvironment } from './TerrainEnvironment';
 import { InstancedVillageNodes } from './InstancedVillageNodes';
 import { VillageNode } from './VillageNode';
-import { HospitalNode } from './HospitalNode';
+import { InstancedHospitalNodes } from './InstancedHospitalNodes';
 import { Ambulance3D } from './Ambulance3D';
 import { EmergencyMarker } from './EmergencyMarker';
 import { PharmacyNode } from './PharmacyNode';
@@ -82,15 +82,8 @@ export const CommandCenter3D: React.FC = () => {
             </>
           )}
 
-          {/* Hospitals & Trauma Centers */}
-          {layers.showHospitals &&
-            hospitals.map((hospital) => (
-              <HospitalNode
-                key={hospital.id}
-                hospital={hospital}
-                isSelected={selectedEntity?.type === 'HOSPITAL' && selectedEntity.id === hospital.id}
-              />
-            ))}
+          {/* Instanced Hospitals & Trauma Centers */}
+          {layers.showHospitals && <InstancedHospitalNodes hospitals={hospitals} />}
 
           {/* Pharmacies & Drone Landing Pads */}
           {pharmacies.map((pharmacy) => (

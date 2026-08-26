@@ -17,8 +17,6 @@ import { SeverityLevel } from '../../types';
 export const CreateEmergencyModal: React.FC = () => {
   const { createEmergencyModalOpen, villages, createNewEmergency } = useHealthcareStore();
 
-  if (!createEmergencyModalOpen) return null;
-
   const [patientName, setPatientName] = useState('');
   const [patientAge, setPatientAge] = useState<number>(42);
   const [patientGender, setPatientGender] = useState<'Male' | 'Female' | 'Other'>('Male');
@@ -31,6 +29,8 @@ export const CreateEmergencyModal: React.FC = () => {
   const [heartRate, setHeartRate] = useState(115);
   const [bloodPressure, setBloodPressure] = useState('145/95');
   const [spO2, setSpO2] = useState(91);
+
+  if (!createEmergencyModalOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -304,7 +304,7 @@ export const JudgeDemoModal: React.FC<JudgeDemoModalProps> = ({ isOpen, onClose 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 select-none">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#02060D] animate-in fade-in duration-200 select-none">
       <div className="w-full max-w-4xl bg-[#08111F] border border-cyan-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
         <div className="px-6 py-4 bg-gradient-to-r from-cyan-950/80 via-slate-900 to-slate-950 border-b border-cyan-500/30 flex items-center justify-between">

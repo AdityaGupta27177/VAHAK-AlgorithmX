@@ -101,10 +101,10 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 bg-[#08111F]/95 backdrop-blur-md border-r border-cyan-500/20 flex flex-col justify-between select-none z-20">
+    <aside className="w-64 bg-white/95 backdrop-blur-md border-r border-slate-200 flex flex-col justify-between select-none z-20 shadow-sm">
       {/* Navigation List */}
       <div className="p-3 space-y-1 overflow-y-auto">
-        <div className="px-3 py-1.5 text-[10px] font-mono text-slate-500 uppercase tracking-widest font-semibold">
+        <div className="px-3 py-1.5 text-[10px] font-mono text-slate-400 uppercase tracking-widest font-semibold">
           Operation Modules
         </div>
 
@@ -118,14 +118,14 @@ export const Sidebar: React.FC = () => {
               onClick={() => navigate(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group ${
                 isActive
-                  ? 'bg-cyan-950/80 border border-cyan-400/60 text-cyan-200 shadow-md shadow-cyan-500/10 font-semibold'
-                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 font-semibold'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               <div className="flex items-center gap-3">
                 <Icon
                   className={`w-4 h-4 transition-colors ${
-                    isActive ? 'text-cyan-400' : 'text-slate-400 group-hover:text-cyan-300'
+                    isActive ? 'text-white' : 'text-slate-500 group-hover:text-blue-600'
                   }`}
                 />
                 <span>{item.label}</span>
@@ -134,7 +134,9 @@ export const Sidebar: React.FC = () => {
               {item.badge && (
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-md border font-mono font-bold ${
-                    item.badgeColor || 'bg-slate-800 text-slate-300 border-slate-700'
+                    isActive
+                      ? 'bg-blue-700 text-white border-blue-400'
+                      : item.badgeColor || 'bg-slate-100 text-slate-700 border-slate-200'
                   }`}
                 >
                   {item.badge}
@@ -146,16 +148,16 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Bottom Emergency Link Badge */}
-      <div className="p-3 border-t border-slate-800/80">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-950/40 to-slate-900 border border-cyan-500/30">
-          <div className="flex items-center justify-between text-[11px] font-bold text-white mb-1">
-            <span className="flex items-center gap-1.5 text-cyan-300 font-mono">
-              <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+      <div className="p-3 border-t border-slate-200">
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-900 mb-1">
+            <span className="flex items-center gap-1.5 text-blue-600 font-mono">
+              <Radio className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
               SATELLITE MESH
             </span>
-            <span className="text-emerald-400 text-[10px] font-mono">99.98%</span>
+            <span className="text-emerald-600 text-[10px] font-mono">99.98%</span>
           </div>
-          <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+          <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
             Autonomous fail-safe routing with offline A* heuristic active.
           </p>
         </div>

@@ -100,22 +100,27 @@ export class RoadNetworkGraph {
    * Find the closest graph node to a given 3D position or lat/lon
    */
   public findClosestNode(
-    pos: [number, number, number] | { lat: number; lon: number }
+    pos: [number, number, number] | { lat?: number; lon?: number } | null | undefined
   ): GraphNode | null {
+    if (!pos) {
+      // Fallback to first node if available
+      const first = this.nodes.values().next().value;
+      return first || null;
+    }
     let closestNode: GraphNode | null = null;
     let minDistance = Infinity;
 
     if (Array.isArray(pos)) {
       for (const node of this.nodes.values()) {
-        const dx = node.position3D[0] - pos[0];
-        const dz = node.position3D[2] - pos[2];
+        const dx = node.position3D[0] - (pos[0] || 0);
+        const dz = node.position3D[2] - (pos[2] || 0);
         const dist = Math.sqrt(dx * dx + dz * dz);
         if (dist < minDistance) {
           minDistance = dist;
           closestNode = node;
         }
       }
-    } else {
+    } else if (typeof pos === 'object' && typeof pos.lat === 'number' && typeof pos.lon === 'number') {
       for (const node of this.nodes.values()) {
         const dist = calculateHaversineDistanceKm(pos.lat, pos.lon, node.latitude, node.longitude);
         if (dist < minDistance) {
@@ -123,6 +128,10 @@ export class RoadNetworkGraph {
           closestNode = node;
         }
       }
+    } else {
+      // Fallback search
+      const first = this.nodes.values().next().value;
+      return first || null;
     }
 
     return closestNode;
