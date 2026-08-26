@@ -1,1284 +1,648 @@
-Rural Healthcare 3D Dispatch & Routing Command Center
-
-Intelligent Routing. Faster Care. Stronger Communities.
-
-A hackathon-ready, real-time rural healthcare operations platform combining a 3D geospatial command center, A / Dijkstra routing*, priority-based emergency dispatch, ambulance and hospital allocation, medicine inventory management, Supabase/PostgreSQL, Realtime updates, and an AI operations assistant.
-
-Dataset
-
-The current local demo is designed around:
-
-50 villages
-
-10 hospitals
-
-50 ambulances
-
-200 doctors
-
-20 medicines
-
-100 patients
-
-80 road nodes
-
-100+ weighted road edges
-
-20 demo emergencies
-
-The architecture can later scale toward the challenge benchmark of 5,000+ villages, 50,000+ graph nodes, and 200,000+ weighted road edges.
-
-1. What the System Solves
-
-Rural healthcare dispatch is not simply a nearest-location problem. A patient may require a specific specialist, an available hospital bed, a particular medicine, a compatible ambulance, and a route that remains inside the emergency SLA.
-
-The platform therefore answers:
-
-Which ambulance should respond, which hospital should receive the patient, and which route minimizes operational cost while satisfying clinical and emergency constraints?
-
-The core decision pipeline is:
-
-Emergency
-   ↓
-Priority Queue
-   ↓
-Clinical / Resource Validation
-   ↓
-Hospital Candidate Filtering
-   ↓
-Ambulance Candidate Filtering
-   ↓
-A* / Dijkstra Routing
-   ↓
-Dispatch Score
-   ↓
-Resource Reservation
-   ↓
-Realtime Update
-   ↓
-3D Command Center
-   ↓
-AI Explanation
-
-2. Main Features
-
-3D Command Center
-
-The main dashboard visualizes a live digital twin containing:
-
-villages
-
-hospitals
-
-pharmacies
-
-junctions
-
-ambulances
-
-emergency locations
-
-roads
-
-blocked roads
-
-active routes
-
-hospital capacity
-
-medicine status
-
-Active routes are displayed as animated paths and ambulance state changes are reflected in realtime.
-
-Emergency Prioritization
-
-Emergency requests are handled through a binary-heap priority queue.
-
-Priority order:
-
-CRITICAL
-HIGH
-MEDIUM
-LOW
-
-Within the same urgency, the system can prioritize by SLA remaining and waiting time.
-
-Intelligent Hospital Allocation
-
-The system does not automatically select the closest hospital.
-
-A hospital must satisfy:
-
-required specialist available
-
-doctor on duty
-
-hospital operational
-
-bed available
-
-required medicine available
-
-route available
-
-SLA feasibility
-
-Ambulance Allocation
-
-Ambulances are evaluated using:
-
-status
-
-current location
-
-ambulance type
-
-medical equipment
-
-ETA
-
-fuel
-
-current assignment
-
-Supported types:
-
-BLS
-ALS
-TRAUMA
-NEONATAL
-CRITICAL_CARE
-
-Dynamic Road Closures
-
-Road conditions can change because of:
-
-flood
-
-landslide
-
-accident
-
-construction
-
-traffic
-
-When a road is closed, active routes are recalculated and updated through realtime events.
-
-AI Operations Intelligence
-
-AI can provide:
-
-dispatch explanations
-
-route explanations
-
-hospital comparisons
-
-operational recommendations
-
-risk analysis
-
-system summaries
-
-forecasting
-
-natural-language queries
-
-simulation planning
-
-The AI is not the source of truth for safety-critical routing or resource reservation.
-
-3. Technology Stack
-
-Frontend
-
-React
-
-TypeScript
-
-Vite
-
-Tailwind CSS
-
-shadcn/ui
-
-Lucide Icons
-
-Three.js
-
-React Three Fiber
-
-Drei
-
-Framer Motion
-
-Recharts
-
-Backend / Data
-
-Supabase
-
-PostgreSQL
-
-Supabase Realtime
-
-Supabase Auth
-
-Supabase Edge Functions / secure server-side functions
-
-Algorithms
-
-A*
-
-Dijkstra
-
-Binary Heap / Priority Queue
-
-Adjacency-list graph
-
-Route caching
-
-Dynamic graph updates
-
-AI
-
-Use a server-side AI provider integration. Keep AI secrets out of the browser.
-
-4. Architecture
-
-                    ┌──────────────────────────┐
-                    │      React / Lovable     │
-                    │     3D Command Center    │
-                    └────────────┬─────────────┘
-                                 │
-                    REST + Supabase Realtime
-                                 │
-                    ┌────────────▼─────────────┐
-                    │        Supabase          │
-                    │ Auth + PostgreSQL + RT   │
-                    └────────────┬─────────────┘
-                                 │
-       ┌─────────────────────────┼─────────────────────────┐
-       │                         │                         │
-       ▼                         ▼                         ▼
-┌───────────────┐        ┌──────────────┐        ┌─────────────────┐
-│ Dispatch      │        │ Routing      │        │ AI Intelligence│
-│ Engine        │        │ Engine       │        │ Layer           │
-└───────┬───────┘        └──────┬───────┘        └────────┬────────┘
-        │                       │                         │
-        ▼                       ▼                         ▼
-Priority Queue          A* / Dijkstra                LLM API
-Hospital Selection      Graph Cache                  Explanation
-Ambulance Selection     Road Closures                Analysis
-Resource Reservation    Re-routing                   Forecasting
-        │                       │                         │
-        └───────────────────────┼─────────────────────────┘
-                                ▼
-                     ┌──────────────────────┐
-                     │ Local Simulation     │
-                     │ 50 Villages          │
-                     │ 10 Hospitals         │
-                     │ 50 Ambulances        │
-                     └──────────────────────┘
-
-5. Database Schema
-
-Core Supabase tables:
-
-villages
-patients
-hospitals
-hospital_departments
-hospital_beds
-doctors
-doctor_shifts
-ambulances
-ambulance_equipment
-medicines
-medicine_inventory
-emergencies
-road_nodes
-road_edges
-road_closures
-routes
-dispatches
-dispatch_events
-ai_recommendations
-
-Relationship overview:
-
-Village
-   ↓
-Emergency
-   ↓
+<div align="center">
+
+```
+██╗   ██╗ █████╗ ██╗  ██╗ █████╗ ██╗  ██╗
+██║   ██║██╔══██╗██║  ██║██╔══██╗██║ ██╔╝
+██║   ██║███████║███████║███████║█████╔╝ 
+╚██╗ ██╔╝██╔══██║██╔══██║██╔══██║██╔═██╗ 
+ ╚████╔╝ ██║  ██║██║  ██║██║  ██║██║  ██╗
+  ╚═══╝  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
+    A L G O R I T H M X  ⚡  3 D
+```
+
+### 🚑 **VAHAK COMMAND CENTER**
+#### *Intelligent Rural Healthcare Dispatch, Routing & Resource Optimization*
+
+**`Real-time`** • **`Intelligent`** • **`Life-saving`**
+
+---
+
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?style=for-the-badge&logo=vite)](https://vitejs.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
+[![Three.js](https://img.shields.io/badge/Three.js-0.185-000000?style=for-the-badge&logo=three.js)](https://threejs.org)
+[![Google Maps](https://img.shields.io/badge/Google_Maps-Platform-4285F4?style=for-the-badge&logo=googlemaps)](https://developers.google.com/maps)
+
+---
+
+📍 **Demo Network: Dharnai Rural Health Network • Jehanabad, Bihar (NH-83)**
+
+</div>
+
+---
+
+---
+
+## 🧩 The Problem
+
+Rural healthcare networks operate with limited ambulances, specialists, hospital beds, medicines, and reliable transportation infrastructure. During simultaneous emergencies, **the nearest hospital is not always the correct destination**.
+
+```
+Village A
+    │
+    │  Critical Cardiology Emergency
+    ▼
+Hospital B ── 10 km ── ❌ Cardiologist unavailable
+Hospital C ── 25 km ── ✅ Cardiologist available
+                        ✅ Bed available
+                        ✅ Medicine available
+```
+
+**VAHAK AlgorithmX** evaluates the complete operational state before dispatching a single ambulance. Distance is a factor — not the decision.
+
+---
+
+## 🚀 Project Overview
+
+VAHAK AlgorithmX is a **real-time algorithmic healthcare logistics platform** for:
+
+- 🗺️ Emergency routing over a real road graph
+- 🚑 Ambulance dispatch with capability matching
+- 🏥 Hospital selection with medical eligibility enforcement
+- 💊 Medicine & bed resource reservation (transaction-safe)
+- 🚧 Dynamic road closure detection & live re-routing
+- 📊 Priority queue scheduling by urgency, SLA, and wait-time
+- 🤖 Explainable AI layer for decision summaries
+
+### Demo Network Scale
+
+| Resource | Demo | Target Architecture |
+|---|---|---|
+| Villages | 50 | 5,000+ |
+| Hospitals | 10 | — |
+| Ambulances | 50 | — |
+| Graph Nodes | — | 50,000+ |
+| Road Edges | — | 200,000+ |
+| Concurrent Emergencies | — | Thousands |
+
+---
+
+## 🏗️ System Architecture
+
+```
+              ┌─────────────────────┐
+              │    REACT FRONTEND   │
+              │  Vite + Three.js 3D │
+              └──────────┬──────────┘
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │   SERVICE LAYER     │
+              │ Emergency / Dispatch│
+              └──────────┬──────────┘
+                         │
+      ┌──────────────────┼──────────────────┐
+      ▼                  ▼                  ▼
+┌───────────┐     ┌───────────┐     ┌───────────┐
+│  Priority │     │Eligibility│     │ Resource  │
+│   Queue   │     │  Engine   │     │Allocation │
+└─────┬─────┘     └─────┬─────┘     └─────┬─────┘
+      └──────────────────┼──────────────────┘
+                         ▼
+              ┌─────────────────────┐
+              │   ROUTING ENGINE    │
+              │   A* / Dijkstra     │
+              └──────────┬──────────┘
+                         ▼
+              ┌─────────────────────┐
+              │   REAL ROAD GRAPH   │
+              │ Nodes + Road Edges  │
+              │ Traffic + Closures  │
+              └──────────┬──────────┘
+                         │
+      ┌──────────────────┼──────────────────┐
+      ▼                  ▼                  ▼
+┌───────────┐     ┌───────────┐     ┌───────────┐
+│Google Maps│     │ Supabase  │     │ Realtime  │
+│ Geometry  │     │PostgreSQL │     │  Events   │
+└───────────┘     └───────────┘     └───────────┘
+                         ▼
+              ┌─────────────────────┐
+              │  CANONICAL ROUTE    │
+              │ Map + 3D + Dispatch │
+              └─────────────────────┘
+```
+
+---
+
+## 💻 Technology Stack
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| **Frontend** | React 19 | Interactive command-center interface |
+| **Build Tool** | Vite 6.2 | Fast development and production builds |
+| **3D Visualization** | Three.js + React Three Fiber | Live ambulance tracking and 3D terrain |
+| **Styling** | Tailwind CSS 4 | Command-center dark UI |
+| **State** | Zustand | Global fleet/emergency state management |
+| **Animations** | Motion (Framer) | Real-time route and status transitions |
+| **Database** | Supabase PostgreSQL | Persistent operational data |
+| **Realtime** | Supabase Realtime | Live emergency, ambulance & resource sync |
+| **Maps** | Google Maps Platform + Leaflet | Geographic visualization & road routing |
+| **Routing** | A* Algorithm | Primary graph shortest-path search |
+| **Routing** | Dijkstra | Shortest-path benchmarking & validation |
+| **Data Structure** | Priority Queue / Binary Heap | Emergency urgency scheduling |
+| **Charting** | Recharts | Analytics and telemetry dashboards |
+| **AI** | Google Gemini (`@google/genai`) | Decision explanations & operational intelligence |
+| **Backend** | Express + TSX | API server layer |
+| **Language** | TypeScript 5.8 | Full-stack type safety |
+
+---
+
+## 🧠 Algorithms & Approach
+
+The implementation follows a strict pipeline:
+
+**Filter → Route → Score → Reserve → Dispatch → Monitor → Re-route**
+
+This prevents expensive routing computations on obviously ineligible destinations and makes every decision explainable to the operator.
+
+### Emergency Dispatch Pipeline
+
+```
+Receive Emergency
+       ↓
+Assign Urgency / SLA
+       ↓
+Insert into Priority Queue   [O(log n)]
+       ↓
+Filter Eligible Hospitals
+  ├── Specialist on active shift?
+  ├── Bed / ICU available?
+  ├── Required medicine in stock?
+  └── Hospital operational?
+       ↓
+Find Compatible Ambulances
+  ├── Vehicle type match?
+  ├── Equipment match?
+  └── ETA to patient?
+       ↓
+Query Road Graph
+       ↓
+Run A* / Dijkstra
+       ↓
+Score Feasible Options
+  └── ETA to patient + ETA to hospital + penalties
+       ↓
+Transactional Resource Reservation
+  └── Ambulance + Bed + Medicine (atomic)
+       ↓
 Dispatch
-   ├── Ambulance
-   ├── Hospital
-   └── Route
-
-Hospital
-   ├── Doctors
-   ├── Beds
-   └── Medicine Inventory
-
-Road Nodes
-   ↓
-Road Edges
-   ↓
-A* / Dijkstra
-
-6. Current Demo Dataset
-
-Entity
-
-Count
-
-Villages
-
-50
-
-Hospitals
-
-10
-
-Ambulances
-
-50
-
-Doctors
-
-200
-
-Patients
-
-100
-
-Medicines
-
-20
-
-Medicine inventory records
-
-200
-
-Hospital departments
-
-70
-
-Hospital beds
-
-300+
-
-Road nodes
-
-80
-
-Road edges
-
-100+
-
-Emergency requests
-
-20
-
-7. Supabase Setup
-
-Create the project
-
-Create a Supabase project.
-
-Open SQL Editor.
-
-Run the project database SQL script.
-
-Confirm that the tables and demo rows were created.
-
-Get the API values
-
-Open:
-
-Supabase Dashboard
-→ Project Settings
-→ API
-
-Copy:
-
-Project URL
-
-Publishable key / anon key, depending on the dashboard version
-
-8. Environment Variables
-
-Create a local .env file for Vite:
-
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your_publishable_or_anon_key
-
-For server-side AI:
-
-AI_PROVIDER=openai
-AI_API_KEY=your_secret_key
-AI_MODEL=your_model
-AI_BASE_URL=your_provider_base_url
-
-Security rule
-
-Never place these in frontend code:
-
-SUPABASE_SERVICE_ROLE_KEY=
-
-Never commit secret API keys to Git.
-
-After changing .env, restart the Vite development server.
-
-9. Supabase Realtime
-
-Realtime should cover the operational tables:
-
-emergencies
-ambulances
-hospitals
-medicine_inventory
-road_edges
-dispatches
-
-Example:
-
-Ambulance A-07
-AVAILABLE
-     ↓
-EN_ROUTE
-     ↓
-Supabase UPDATE
-     ↓
-Realtime Event
-     ↓
-Frontend Store
-     ↓
-3D Ambulance
-     ↓
-Updated State
-
-The same pattern applies to emergencies, hospitals, medicines, roads, and dispatches.
-
-10. Local Simulation Engine
-
-The local engine operates the hackathon demo environment with:
-
-50 Villages
-10 Hospitals
-50 Ambulances
-200 Doctors
-20 Medicines
-
-It can generate:
-
-emergency requests
-
-ambulance movement
-
-hospital utilization changes
-
-medicine consumption
-
-road closures
-
-dispatch assignments
-
-route recalculations
-
-completed emergencies
-
-Data flow:
-
-Local Simulation
        ↓
-Supabase state
+Stream Realtime State Updates
        ↓
-Realtime event
-       ↓
-Frontend state
-       ↓
-3D Command Center
+Road condition change?
+  ├── NO  → Continue monitoring
+  └── YES → Invalidate route → Re-run A* → Update ETA
+```
 
-11. Routing Engine
+---
 
-The road network uses a weighted graph.
+### ⭐ A\* Routing
 
-Nodes
+A* is the primary routing algorithm. The geographic heuristic guides the search toward the destination, avoiding unnecessary full-graph traversal — critical when the network has tens of thousands of nodes.
 
-VILLAGE
-HOSPITAL
-PHARMACY
-JUNCTION
-
-Edges
-
-distance_km
-travel_time_min
-traffic_multiplier
-road_condition
-blocked
-bidirectional
-
-A*
-
-The A* implementation uses:
-
+```
 f(n) = g(n) + h(n)
 
-where:
+g(n) = accumulated travel cost (time or distance)
+h(n) = Haversine-based geographic heuristic to destination
+f(n) = estimated total route cost
+```
 
-g(n) = accumulated travel cost
+The graph uses an **adjacency-list representation**:
 
-h(n) = geographic heuristic
-
-The router should return:
-
-{
-  "route": ["V-01", "J-04", "J-12", "H-05"],
-  "distanceKm": 24.8,
-  "travelTimeMin": 31.4,
-  "visitedNodes": 2184,
-  "executionTimeMs": 7.2
+```typescript
+export class RoadNetworkGraph {
+  nodes: Map<string, GraphNode>        // nodeId → { lat, lon, type }
+  adjacencyList: Map<string, GraphEdge[]> // nodeId → [{ to, distance, travelTime, blocked }]
+  edges: Map<string, GraphEdge>
 }
+```
 
-Dijkstra is included for comparison and cases where a heuristic is not desirable.
+Blocked road edges are excluded from traversal. If no connected path exists, the system reports **NO VALID ROAD ROUTE AVAILABLE** — it never falls back to a straight-line path.
 
-12. Dispatch Scoring
+---
 
-A simplified operational score is:
+### 🔎 Dijkstra
 
-Dispatch Score =
-    Ambulance ETA
-  + Hospital Travel Time
-  + Capacity Penalty
-  + Traffic Penalty
-  + SLA Risk
+Dijkstra runs on the same road graph and same cost model as A* to:
+- Provide a reliable shortest-path baseline
+- Benchmark A* search efficiency (visited nodes, execution time)
+- Validate A* correctness
 
-A hospital is eligible only when:
+---
 
-Specialist available
-AND
-Bed available
-AND
-Medicine available
-AND
-Hospital operational
-AND
-Route exists
+### ⚡ Priority Queue (Binary Heap)
 
-This prevents the system from selecting a nearby hospital that cannot actually treat the patient.
+Emergency requests are managed through a min-heap priority queue.
 
-13. Main Demo Scenario
+```
+Priority Order:    CRITICAL → HIGH → MEDIUM → LOW
+Tie-breaking:      SLA remaining → Deadline → Wait time
 
-Request
+Complexity:
+  Push → O(log n)
+  Pop  → O(log n)
+  Peek → O(1)
+```
 
-Village A generates an urgent cardiac emergency.
+---
 
-Required:
+### 🏥 Hospital Eligibility Engine (Code Excerpt)
 
-Specialist: Cardiology
-Medicine: Cardiac medicine
-Urgency: CRITICAL
-SLA: 20 minutes
+```typescript
+// From: src/services/dispatchEngine.ts
+export function evaluateHospitalForEmergency(
+  emergency: Emergency,
+  hospital: Hospital,
+  doctors: Doctor[],
+  medicines: Medicine[],
+  graph: RoadNetworkGraph,
+  patientNodeId: string
+): HospitalClinicalEvaluation {
+  // 1. Operational status check
+  // 2. Bed / ICU capacity check
+  // 3. Required specialist on active shift
+  // 4. Required medicine in stock
+  // 5. Valid connected road route via A*
+  // Returns: { eligible, rejectionReasons, score }
+}
+```
 
-Hospital B
+Hospital filtering happens **before** route optimization. This prevents the routing engine from spending compute on a medically unsuitable destination.
 
-Distance: ~10 km
-Cardiologist: UNAVAILABLE
+---
 
-Result:
+### 🚧 Dynamic Road Closures
 
-HOSPITAL B REJECTED
-
-Hospital C
-
-Distance: ~25 km
-Cardiologist: AVAILABLE
-Bed: AVAILABLE
-Medicine: AVAILABLE
-
-Result:
-
-HOSPITAL C SELECTED
-
-The system then:
-
-prioritizes the emergency
-
-finds compatible ambulances
-
-selects the lowest-cost feasible ambulance
-
-calculates an A* route
-
-reserves resources
-
-dispatches the ambulance
-
-animates the route in 3D
-
-updates state through Supabase Realtime
-
-14. Dynamic Road Closure
-
-During the demo, close an active route.
-
-Example:
-
-ROAD R-102 BLOCKED
-
-The expected sequence is:
-
-Current Route Invalid
-       ↓
+```
+ROAD OPEN
+    ↓
+ROAD BLOCKED
+    ↓
+Affected Route Invalidated
+    ↓
+Road Graph Updated (edge.blocked = true)
+    ↓
 A* Recalculation
-       ↓
-New Route Found
-       ↓
-ETA Updated
-       ↓
-3D Path Updated
-       ↓
-AI Explanation
+    ↓
+Alternative Valid Route
+    ↓
+ETA Updated → Ambulance Route Updated
+```
 
-The dashboard should show both the original and recalculated decision state.
+---
 
-15. AI Operations Layer
+### 💊 Transaction-Safe Resource Reservation
 
-AI is an operational assistant, not the safety-critical decision engine.
+A successful dispatch atomically reserves:
 
-Useful questions:
+```
+Ambulance  +  Hospital Bed  +  Required Medicine
+```
 
-Why was Hospital C selected?
+Simultaneous emergency requests cannot reserve the same unavailable resource. Reservations are committed only after all three resources are confirmed available.
 
-Why was Hospital B rejected?
+---
 
-Which ambulance should respond next?
+## 📁 Project Structure
 
-What happens if Road R-102 closes?
-
-Which hospitals are nearing capacity?
-
-Which medicines are at risk?
-
-Summarize today's emergency performance.
-
-Simulate 50 critical emergencies.
-
-Example structured response:
-
-{
-  "summary": "Hospital C was selected because it satisfies all clinical and operational constraints.",
-  "reasons": [
-    "Cardiologist available",
-    "Bed available",
-    "Required medicine available",
-    "Route feasible within SLA"
-  ],
-  "risks": [
-    "Traffic may increase ETA"
-  ],
-  "alternatives": [
-    "Hospital D had a higher projected travel cost"
-  ],
-  "confidence": 94
-}
-
-AI must never invent operational facts such as:
-
-ambulance locations
-
-hospital capacity
-
-doctor availability
-
-medicine stock
-
-route distance
-
-ETA
-
-Use verified backend data as the source of truth.
-
-16. AI Safety Architecture
-
-Correct pattern:
-
-User
- ↓
-AI
- ↓
-Recommendation
- ↓
-Backend Validation
- ↓
-Deterministic Engine
- ↓
-Database Mutation
-
-Do not allow:
-
-User
- ↓
-AI
- ↓
-Direct Database Mutation
-
-The following remain deterministic:
-
-emergency priority
-
-hospital eligibility
-
-ambulance eligibility
-
-A* routing
-
-Dijkstra routing
-
-bed reservation
-
-medicine reservation
-
-ambulance reservation
-
-17. Table Editor / SQL Editor
-
-A Supabase-style database operations area can be included in the application.
-
-Table Editor
-
-Support:
-
-table browsing
-
-row search
-
-filtering
-
-sorting
-
-row insertion
-
-row editing
-
-row deletion
-
-pagination
-
-JSON inspection
-
-CSV export
-
-SQL Editor
-
-Support:
-
-SQL syntax highlighting
-
-SELECT execution
-
-INSERT / UPDATE / DELETE
-
-query results
-
-execution time
-
-row count
-
-query history
-
-saved queries
-
-error messages
-
-Raw SQL execution should be restricted to authorized database administrators in a production environment.
-
-18. Recommended Project Structure
-
-src/
-├── components/
-│   ├── dashboard/
-│   ├── emergency/
-│   ├── ambulance/
-│   ├── hospital/
-│   ├── database/
-│   ├── ai/
-│   └── shared/
+```
+VAHAK-AlgorithmX/
 │
-├── components/3d/
-│   ├── HealthcareWorld.tsx
-│   ├── VillageNode.tsx
-│   ├── HospitalNode.tsx
-│   ├── Ambulance3D.tsx
-│   ├── RoutePath.tsx
-│   └── CameraController.tsx
+├── src/
+│   ├── components/
+│   │   ├── 3d/                    # Three.js / R3F components
+│   │   │   ├── Ambulance3D.tsx    # Live ambulance mesh + animation
+│   │   │   ├── CommandCenter3D.tsx
+│   │   │   ├── EmergencyMarker.tsx
+│   │   │   ├── HospitalNode.tsx
+│   │   │   ├── MapHUDOverlay.tsx  # In-3D HUD overlays
+│   │   │   ├── RoadNetwork.tsx
+│   │   │   ├── RoutePath.tsx
+│   │   │   └── TerrainEnvironment.tsx
+│   │   ├── dashboard/
+│   │   │   └── RightIntelligencePanel.tsx
+│   │   ├── layout/
+│   │   │   ├── BottomTelemetry.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   └── TopBar.tsx
+│   │   ├── map/
+│   │   │   └── GoogleMapsInteractiveView.tsx
+│   │   └── modals/
+│   │       ├── CreateEmergencyModal.tsx
+│   │       ├── DispatchModal.tsx
+│   │       └── JudgeDemoModal.tsx
+│   │
+│   ├── pages/
+│   │   ├── AiAssistantPage.tsx
+│   │   ├── AmbulancesPage.tsx
+│   │   ├── AnalyticsPage.tsx
+│   │   ├── DoctorsPage.tsx
+│   │   ├── EmergenciesPage.tsx
+│   │   ├── HospitalsPage.tsx
+│   │   ├── LoginPage.tsx
+│   │   ├── MedicinesPage.tsx
+│   │   ├── RoadsPage.tsx
+│   │   ├── SimulationPage.tsx
+│   │   └── SettingsPage.tsx
+│   │
+│   ├── services/
+│   │   ├── graphEngine.ts          # RoadNetworkGraph + Haversine
+│   │   ├── dispatchEngine.ts       # Hospital eligibility + dispatch pipeline
+│   │   ├── intelligentRoutingEngine.ts  # A* implementation
+│   │   ├── priorityQueue.ts        # Binary heap + SLA scheduling
+│   │   ├── ambulanceService.ts
+│   │   ├── emergencyService.ts
+│   │   ├── hospitalService.ts
+│   │   ├── geminiService.ts        # AI decision explanation
+│   │   ├── aiService.ts
+│   │   └── analyticsService.ts
+│   │
+│   ├── lib/
+│   │   └── supabaseClient.ts
+│   │
+│   └── types/                      # Full TypeScript type definitions
 │
-├── pages/
-├── services/
-│   ├── supabase.ts
-│   ├── emergencyService.ts
-│   ├── ambulanceService.ts
-│   ├── hospitalService.ts
-│   ├── routingService.ts
-│   ├── medicineService.ts
-│   └── aiService.ts
+├── supabase/
+│   ├── migrations/
+│   └── seed/
 │
-├── algorithms/
-│   ├── AStar.ts
-│   ├── Dijkstra.ts
-│   ├── PriorityQueue.ts
-│   └── Graph.ts
-│
-├── store/
-├── types/
-└── utils/
+├── server.ts                       # Express backend
+├── index.html
+├── package.json
+├── .env.example
+└── README.md
+```
 
-19. Performance Strategy
+---
 
-The hackathon demo uses a compact dataset, but the architecture should support the larger benchmark.
+## 🗄️ Database Architecture
 
-Target scale:
+Supabase PostgreSQL stores all operational state:
 
-5,000+ villages
-50,000+ graph nodes
-200,000+ graph edges
-Thousands of emergency requests
+| Table | Purpose |
+|---|---|
+| `villages` | 50 rural villages with GPS coordinates |
+| `hospitals` | Hospital capacity, status, specialists |
+| `hospital_beds` | Bed-level occupancy tracking |
+| `doctors` / `doctor_shifts` | Specialist availability & duty status |
+| `ambulances` / `ambulance_equipment` | Fleet state & capability |
+| `medicines` / `medicine_inventory` | Per-hospital medicine stock |
+| `emergencies` | Emergency queue with urgency & SLA |
+| `road_nodes` / `road_edges` | Graph nodes and weighted road segments |
+| `road_closures` | Active and historical road blocks |
+| `routes` | Calculated A* / Dijkstra routes |
+| `dispatches` / `dispatch_events` | Dispatch lifecycle events |
+| `ai_recommendations` | Gemini AI explanation logs |
+| `audit_logs` | Full operational audit trail |
 
-Recommended strategies:
+**Key indexes:** `emergencies.status`, `emergencies.urgency`, `road_edges.blocked`, `ambulances.status`, `medicine_inventory.hospital_id`
 
-adjacency lists
+---
 
-binary heap priority queues
+## 🔴 Realtime Architecture
 
-graph indexing
+Supabase Realtime keeps the command center synchronized without page refresh:
 
-route caching
+```
+Database Change  →  Supabase Realtime  →  UI State Update
 
-incremental route invalidation
+Channels:
+  emergencies      → Priority queue refresh
+  ambulances       → Fleet position & status
+  hospitals        → Bed / resource counters
+  medicine_inventory → Stock levels
+  road_closures    → Graph edge invalidation → A* re-route
+  dispatches       → Route streaming
+```
 
-typed / compact graph storage when scale requires it
+**Ambulance lifecycle:**
 
-worker-based heavy simulations
+```
+AVAILABLE → ASSIGNED → EN_ROUTE → ARRIVED → TRANSPORTING → AVAILABLE
+```
 
-database indexes
+**Emergency lifecycle:**
 
-pagination / virtualization in table views
+```
+QUEUED → DISPATCHING → DISPATCHED → EN_ROUTE → ARRIVED → COMPLETED
+```
 
-Do not repeatedly scan the entire graph or all hospitals when indexed candidate filtering can be used.
+---
 
-20. Security
+## 🤖 AI Integration (Gemini)
 
-For production deployment:
+The AI layer (`@google/genai`) is an **explanation and assistance layer only**. It does not override deterministic decisions.
 
-use Supabase Auth
+| AI Responsibility | Deterministic Responsibility |
+|---|---|
+| Explain why a hospital was selected | A* path calculation |
+| Explain why a hospital was rejected | Emergency priority |
+| Summarize route decisions | Specialist eligibility |
+| Identify operational risks | Bed / medicine availability |
+| Generate human-readable dispatch reasoning | Transactional resource reservation |
 
-enable Row Level Security
+If the AI service is unavailable, the core routing and dispatch engine continues operating without interruption.
 
-use role-based access control
+---
 
-keep service-role credentials server-side
+## 🔧 Setup & Run Instructions
 
-keep AI API keys server-side
+### Prerequisites
 
-validate user input
+- Node.js 18+
+- A Supabase project (free tier works)
+- Google Maps Platform API key
+- Google Gemini API key
 
-audit administrative mutations
+### 1. Clone Repository
 
-rate-limit AI endpoints
+```bash
+git clone https://github.com/AdityaGupta27177/VAHAK-AlgorithmX.git
+cd VAHAK-AlgorithmX
+```
 
-avoid exposing sensitive patient information
+### 2. Install Dependencies
 
-Recommended roles:
+```bash
+npm install
+```
 
-dispatcher
-doctor
-hospital_admin
-database_admin
-system_admin
+### 3. Configure Environment
 
-21. Testing
+Create a `.env` file in the project root:
 
-Test the following before final presentation:
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_publishable_anon_key
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+GEMINI_API_KEY=your_gemini_api_key
+```
 
-Algorithms
+> ⚠️ Never commit `.env`. Never expose `SUPABASE_SERVICE_ROLE_KEY` in client-side code. Use Supabase Row Level Security for protected operations.
 
-A*
+### 4. Start Development Server
 
-Dijkstra
+```bash
+npm run dev
+```
 
-priority queue
+### 5. Production Build
 
-graph construction
+```bash
+npm run build
+npm run start
+```
 
-route caching
+### 6. Preview Production Build
 
-Dispatch
+```bash
+npm run preview
+```
 
-ambulance selection
+---
 
-hospital selection
+## 🧪 Test Cases
 
-specialist validation
+The test suite validates both algorithm correctness and operational edge cases.
 
-bed validation
+| # | Test Case | Input | Expected Behavior |
+|---|---|---|---|
+| 01 | **Specialist Unavailable** | Nearest hospital has no required specialist | Hospital rejected. Next medically eligible hospital evaluated |
+| 02 | **Hospital Bed Full** | Hospital has specialist but zero available beds | Hospital rejected. Another eligible facility evaluated |
+| 03 | **Medicine Depleted** | Required medicine inventory = 0 | Hospital rejected or replenishment workflow triggered |
+| 04 | **All Ambulances Occupied** | No compatible ambulance currently available | Emergency stays queued with high priority. Dispatch triggers when a unit becomes available |
+| 05 | **Road Closure** | Active route contains a newly blocked edge | Route invalidated. A* recalculates. Alternative connected path selected |
+| 06 | **No Valid Route** | No connected road path between source and destination | `NO VALID ROAD ROUTE AVAILABLE` — no straight-line fallback generated |
+| 07 | **Simultaneous Critical Emergencies** | Multiple CRITICAL requests arrive together | Priority queue resolves by urgency + SLA/deadline/wait-time. Reservations remain consistent |
+| 08 | **A\* vs Dijkstra Benchmark** | Same source, destination & road graph | Both return valid shortest path. Benchmark: execution time, visited nodes, path cost |
 
-medicine validation
+---
 
-Resilience
+## 🌐 Third-Party APIs
 
-no available ambulance
+| Tool / API | One-line Purpose |
+|---|---|
+| **Google Maps Platform** | Geographic mapping, road-aware visualization, and route geometry for the command center |
+| **Supabase** | PostgreSQL database storage, authentication, and realtime synchronization across all operational entities |
+| **Leaflet** | Lightweight interactive map layer used alongside Google Maps for road overlay rendering |
 
-no compatible ambulance
+---
 
-no specialist
+## 🤖 AI Tools
 
-hospital full
+| Tool | One-line Purpose |
+|---|---|
+| **Google Gemini (`@google/genai`)** | Generates human-readable dispatch explanations, hospital selection reasoning, and operational risk summaries around deterministic routing decisions |
 
-medicine unavailable
+---
 
-no route
+## 🎯 Demo Workflow (Judge Scenario)
 
-all candidate roads blocked
+The central demonstration scenario: a medically urgent request where the geographically nearest facility is **not** the correct destination.
 
-simultaneous emergencies
+```
+[1] Critical Cardiology Request arrives from Village Dhakai
 
-concurrent resource reservations
+[2] PRIORITY QUEUE — CRITICAL urgency, SLA timer starts
 
-AI
+[3] Hospital B (10 km)
+     → Evaluated
+     → ❌ No Cardiologist on active shift
+     → REJECTED
 
-structured response validation
+[4] Hospital C — Trauma Hospital, Jehanabad (25 km)
+     → ✅ Cardiologist available
+     → ✅ ICU bed available
+     → ✅ Required medicine in stock
+     → ELIGIBLE
 
-AI provider failure
+[5] Available Ambulances evaluated by ETA to patient
 
-insufficient operational data
+[6] A* runs on road graph → NH-83 route calculated
 
-invalid recommendation
+[7] Resources reserved transactionally
 
-22. Judge Demo Flow
+[8] Ambulance A-17 dispatched — ETA: 04:28
 
-A recommended three-minute presentation:
+[9] NH-83 Landslide detected → edge blocked
 
-00:00–00:20
+[10] Route invalidated → A* recalculates
+     → Alternative road path selected
+     → New ETA streamed to command center
+```
 
-Open the 3D Command Center.
+---
 
-Show:
+## ⚡ Performance Targets
 
-50 Villages
-10 Hospitals
-50 Ambulances
+| Operation | Complexity |
+|---|---|
+| Priority Queue Insert | O(log n) |
+| Priority Queue Remove | O(log n) |
+| Priority Queue Peek | O(1) |
+| A* (adjacency-list + binary heap) | O((V + E) log V) |
+| Dijkstra (adjacency-list + binary heap) | O((V + E) log V) |
 
-00:20–00:45
+Additional optimizations:
+- Candidate hospital filtering before route computation
+- Route caching where operationally safe
+- Graph versioning for incremental re-calculation
+- Indexed Supabase queries on hot fields
+- Realtime state separated from compute-heavy routing
 
-Create:
+---
 
-CRITICAL CARDIAC EMERGENCY
+## 👥 Team
 
-00:45–01:15
+| Name | Role |
+|---|---|
+| **Abhishek Gupta** | UI/UX & Frontend Development |
+| **Parth Angare** | Backend Development |
+| **Aditya Gupta** | Algorithms & AI/ML |
+| **Raj Barai** | Auth, Database & Documentation |
 
-Show hospital evaluation:
+---
 
-Hospital B
-REJECTED
-No Cardiologist
+## 📋 Submission Checklist
 
-Then:
+- [x] Repository name follows Team Name requirement
+- [x] Complete source code pushed to repository
+- [x] `Twenitrix` added as Collaborator
+- [x] `AyushRBuilds` added as Collaborator
+- [x] `InvictusMF` added as Collaborator
+- [x] README.md properly updated and formatted
+- [x] Algorithm / approach documented
+- [x] Testing / test cases included
+- [x] Third-party APIs mentioned with one-line purpose
+- [x] AI tools mentioned with one-line purpose
+- [x] Deployed project link working
+- [x] Repository link correct and accessible
 
-Hospital C
-SELECTED
+---
 
-01:15–01:40
+## 🔗 Repository
 
-Show A* telemetry:
+**Source Code:** [https://github.com/AdityaGupta27177/VAHAK-AlgorithmX](https://github.com/AdityaGupta27177/VAHAK-AlgorithmX)
 
-A* ROUTING
-Distance
-ETA
-Nodes Visited
-Execution Time
+---
 
-Animate the ambulance.
+<div align="center">
 
-01:40–02:00
+```
+REAL ROAD GRAPH  +  A* / DIJKSTRA  +  PRIORITY QUEUE
++  AMBULANCE ALLOCATION  +  SPECIALIST / BED / MEDICINE CONSTRAINTS
++  SUPABASE REALTIME STATE  +  EXPLAINABLE AI
+═══════════════════════════════════════
+INTELLIGENT RURAL DISPATCH
+```
 
-Close the active road.
+**🚑 VAHAK 3D COMMAND CENTER**
 
-Show dynamic route recalculation.
+*Urgency • Algorithms • Real Roads • Resources • Realtime Intelligence*
 
-02:00–02:25
+**DHARNAI RURAL HEALTH NETWORK • JEHANABAD, BIHAR (NH-83)**
 
-Ask the AI:
-
-Why was Hospital C selected?
-
-Show the structured explanation.
-
-02:25–03:00
-
-Show final results:
-
-EMERGENCY RESOLVED
-
-Response Time
-SLA Compliance
-Route Recalculations
-A* Performance
-AI Confidence
-
-23. Useful SQL Queries
-
-All ambulances
-
-SELECT
-    id,
-    vehicle_number,
-    type,
-    status,
-    driver_name,
-    fuel_percentage
-FROM public.ambulances
-ORDER BY id;
-
-Critical emergencies
-
-SELECT
-    id,
-    urgency,
-    condition,
-    required_specialist,
-    status,
-    created_at
-FROM public.emergencies
-WHERE urgency = 'CRITICAL'
-ORDER BY created_at DESC;
-
-Hospitals near capacity
-
-SELECT
-    name,
-    total_beds,
-    occupied_beds,
-    ROUND(
-        occupied_beds::NUMERIC
-        / NULLIF(total_beds, 0) * 100,
-        1
-    ) AS occupancy_percent
-FROM public.hospitals
-ORDER BY occupancy_percent DESC;
-
-Low medicine stock
-
-SELECT
-    m.name AS medicine,
-    h.name AS hospital,
-    mi.quantity,
-    mi.reorder_level
-FROM public.medicine_inventory mi
-JOIN public.medicines m
-    ON m.id = mi.medicine_id
-JOIN public.hospitals h
-    ON h.id = mi.hospital_id
-WHERE mi.quantity <= mi.reorder_level
-ORDER BY mi.quantity ASC;
-
-Blocked roads
-
-SELECT
-    re.id,
-    re.distance_km,
-    re.travel_time_min,
-    re.road_condition
-FROM public.road_edges re
-WHERE re.blocked = TRUE
-ORDER BY re.id;
-
-24. Development Workflow
-
-1. Create Supabase project
-2. Run database SQL
-3. Add environment variables
-4. Connect Supabase client
-5. Verify database tables
-6. Seed demo data
-7. Enable Realtime
-8. Start local simulation
-9. Connect dashboard
-10. Connect A* routing
-11. Connect AI API
-12. Run judge demo
-
-25. Troubleshooting
-
-Supabase connection fails
-
-Verify:
-
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-
-Restart the development server after changing .env.
-
-Realtime does not update
-
-Check:
-
-the table is enabled for Realtime
-
-the frontend is subscribed to the correct schema/table
-
-authentication/RLS allows the operation
-
-the database mutation commits successfully
-
-A* cannot find a route
-
-Check:
-
-source node exists
-
-destination node exists
-
-the graph is connected
-
-required edges are not blocked
-
-node IDs match between Supabase and the routing engine
-
-AI is unavailable
-
-The basic system must continue operating with:
-
-Priority Queue
-+
-Hospital Allocation
-+
-Ambulance Allocation
-+
-A* / Dijkstra
-
-AI is an enhancement, not a hard dependency for emergency routing.
-
-26. Scaling Roadmap
-
-Phase 1 — Hackathon Demo
-
-50 villages
-10 hospitals
-50 ambulances
-
-Phase 2 — Expanded Simulation
-
-500 villages
-50 hospitals
-500 ambulances
-
-Phase 3 — Challenge Benchmark
-
-5,000+ villages
-50,000+ graph nodes
-200,000+ graph edges
-Thousands of concurrent emergencies
-
-For production-scale deployments, consider:
-
-Redis
-
-background workers
-
-graph partitioning
-
-distributed job queues
-
-geospatial indexing
-
-route caching
-
-connection pooling
-
-observability
-
-horizontal scaling
-
-27. Final Checklist
-
-Before the hackathon presentation:
-
-Supabase connected
-
-50 villages loaded
-
-10 hospitals loaded
-
-50 ambulances loaded
-
-200 doctors loaded
-
-medicine inventory populated
-
-road network loaded
-
-Realtime working
-
-emergency creation working
-
-priority queue working
-
-hospital allocation working
-
-ambulance allocation working
-
-A* working
-
-Dijkstra working
-
-road closure working
-
-dynamic rerouting working
-
-3D route animation working
-
-AI explanation working
-
-SQL Editor working
-
-Table Editor working
-
-analytics working
-
-judge demo working
-
-28. Engineering Principle
-
-The core architecture intentionally separates deterministic operational logic from AI intelligence.
-
-GRAPH ALGORITHMS
-        +
-PRIORITY QUEUES
-        +
-RESOURCE ALLOCATION
-        +
-REAL-TIME DATA
-        +
-3D VISUALIZATION
-        +
-AI OPERATIONS INTELLIGENCE
-
-Use deterministic algorithms for operational truth and AI for intelligence, explanation, analysis, and decision support.
-
-29. License
-
-This project is intended as a hackathon and educational prototype.
-
-Add your institution, team, competition, or organization-specific license before public production deployment.
-
-Project Identity
-
-Rural Healthcare 3D Dispatch & Routing Command Center
-
-Core technologies: React • Three.js • Supabase • PostgreSQL • A* • Dijkstra • Priority Queue • Realtime • AI
-
-Primary objective: Optimize emergency healthcare routing and resource allocation while providing real-time, explainable operational visibility.
+</div>
